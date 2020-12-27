@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GeoJSON Editor</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="plugins/leaflet.css">
+    <link rel="stylesheet" href="plugins/leaflet.draw.css">
+    <link rel="stylesheet" href="plugins/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="plugins/jquery-2.2.4.min.js"></script>
+    <script src="plugins/knockout-3.4.0.js"></script>
+    <script src="plugins/leaflet.js"></script>
+    <script src="plugins/leaflet.draw.js"></script>
+    <script src="plugins/codemirror/lib/codemirror.js"></script>
+    <script src="plugins/codemirror/mode/javascript/javascript.js"></script>
+    <script src="plugins/turf.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="controlContainer">
+            <input type="button" value="合并" id="btnMerge" class="button">
+            <input type="button" value="分割" id="btnSplit" class="button">
+            <input type="button" value="列表" id="btnList" class="button">
+            <input type="button" value="包围" id="btnBound" class="button">
+        </div>
+        <div id="mapContainer">
+            <div id="map"></div>
+        </div>
+        <div class="codeContainer">
+            <div style="height:100%;" data-bind='codemirror:{mode: "javascript",lineNumbers: true, value: geojsonInput}'></div>
+        </div>
+    </div>
+    <script>
+    var handleDragEnter = function(e) {
+        this.classList.add('drag-over');
+    };
+    var handleDragOver = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    };
+    var handleDragLeave = function(e) {
+        this.classList.remove('drag-over');
+    };
+    var handleDrop = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var files = e.dataTransfer.files;
+        if (files && files.length) {
+            readFile(files[0]);
+        }
+        this.classList.remove('drag-over');
+    };
+    var handleDrop = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var files = e.dataTransfer.files;
+        if (files && files.length) {
+            readFile(files[0]);
+        }
+        this.classList.remove('drag-over');
+    };
+    var readFile = function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            vm.geojsonInput(JSON.stringify(JSON.parse(e.target.result), null, 2));
+        };
+        reader.readAsText(file);
+    };
+    function initButtons() {
+        $('#btnMerge').on("click", function() {
+            console.log("=======", 123);
+        });
+        $('#btnSplit').on("click", function() {
+            console.log("=======", 123);
+        });
+        $('#btnList').on("click", function() {
+            console.log("=======", 123);
+        });
+        $('#btnBound').on("click", function() {
+            console.log("=======", 123);
+        });
+    }
+    function MainModel() {
+        var self = this;
+        var mapContainer = document.querySelector('#mapContainer');
+        mapContainer.addEventListener('dragenter', handleDragEnter, false);
+        mapContainer.addEventListener('dragleave', handleDragLeave, false);
+        mapContainer.addEventListener('dragover', handleDragOver, false);
+        mapContainer.addEventListener('drop', handleDrop, false);
+
+        self.map = L.map('map').setView([106.81088508014,26.202326310212], 5);
+        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(self.map);
+        self.geojsonInput = ko.observable(JSON.stringify({"type": "FeatureCollection","features": [{"type": "Feature","properties": {"name": "startPoint"},"geometry": {"type": "Point","coordinates": [106.66557312011717, 26.155592052118045]}}]}, null, 2));
+        self.geojsonLayer = new L.FeatureGroup();
+        self.map.addLayer(self.geojsonLayer);
+        self.drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: self.geojsonLayer
+            },
+            draw: {
+                rectangle: false,
+                circle: false,
+            }
+        });
+        self.map.addControl(self.drawControl);
+        L.control.scale({ imperial: false }).addTo(self.map);
+        self.map.on('draw:created', function(e){
+            console.log("draw:created");
+            self.geojsonLayer.addLayer(e.layer);
+            self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
+        });
+        self.map.on('draw:edited', function(e){
+            console.log("draw:edited");
+            self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
+        });
+        self.map.on('draw:deleted', function(e){
+            console.log("draw:deleted");
+            e.layers.eachLayer(function(layer){
+                self.geojsonLayer.removeLayer(e.layer);
+            })
+            self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
+        });
+        self.checkGeojsonInput = function(jsonText){
+            try{
+                L.geoJson(JSON.parse(jsonText))
+                return true
+            }
+            catch(e){
+                return false
+            }
+        }
+        // Update map from input
+        self.addGeojsonToLayer = function(jsonText){
+            if(self.checkGeojsonInput(jsonText)){
+                self.geojsonLayer.clearLayers();
+                var geojson = L.geoJson(JSON.parse(jsonText), {
+                    onEachFeature: function(feature, layer){
+                        var i = 0;
+                        for(var key in feature.properties){
+                            i++;
+                        }
+                        if(i>0){
+                            var popup = '';
+                            for(var key in feature.properties){
+                                popup = popup + '<b>'+key+':</b> '+feature.properties[key]+'<br>';
+                            }
+                            layer.bindPopup(popup);
+                        }
+                        self.geojsonLayer.addLayer(layer);
+                    }
+                })
+                try{
+                    self.map.fitBounds(geojson.getBounds());
+                }catch(e){}
+            }
+        }
+        // CodeMirror binding
+        ko.bindingHandlers.codemirror = {
+            init: function(element, valueAccessor) {
+                var options = ko.unwrap(valueAccessor());
+                element.editor = CodeMirror(element, ko.toJS(options));
+                element.editor.display.wrapper.style.fontSize = '14px';
+                element.editor.on('change', function(cm) {
+                    options.value(cm.getValue());
+                });
+
+                ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                    var wrapper = element.editor.getWrapperElement();
+                    wrapper.parentNode.removeChild(wrapper);
+                });
+            },
+            update: function(element, valueAccessor) {
+                var value = ko.toJS(valueAccessor()).value;
+                if (element.editor) {
+                    var cur = element.editor.getCursor();
+                    element.editor.setValue(value);
+                    element.editor.setCursor(cur);
+                    element.editor.refresh();
+                    self.addGeojsonToLayer(self.geojsonInput())
+                }
+            }
+        };
+    };
+    var vm = new MainModel();
+    initButtons();
+    ko.applyBindings(vm);
+    </script>
+</body>
+</html>

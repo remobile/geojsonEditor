@@ -1,0 +1,42 @@
+body,html {
+    margin: 0;
+    padding: 0;
+}
+.container {
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+.controlContainer {
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+#mapContainer {
+    flex: 3;
+    margin: 1px;
+    border: 2px dashed #ccc;
+}
+#mapContainer.drag-over {
+    border-color: #3280fc;
+    background-color: red;
+}
+.codeContainer {
+    flex: 1;
+}
+#map {
+    height: 100%;
+    width: 100%;
+}
+.CodeMirror {
+    border: 1px solid #eee;
+    height: 100%;
+}
+.button {
+    margin-bottom: 30px;
+    margin-left: 10px;
+    margin-right: 10px;
+}

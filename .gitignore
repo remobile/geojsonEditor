@@ -1,0 +1,16 @@
+#npm
+dist/
+temp.json
+error.json
+*.[aod]
+*.DS_Store
+.DS_Store
+*Thumbs.db
+.flowconfig
+.watchmanconfig
+/**/npm-debug.log
+/**/data/*.json
+/**/head/*
+node_modules
+package-lock.json
+*.lock
