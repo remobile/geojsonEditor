@@ -80,11 +80,9 @@
             const data = vm.getGeojsonData();
             data && vm.geojsonInput(JSON.stringify(splitPolygon(data), null, 2));
         });
-        $('#btnList').on("click", function() {
-            console.log("=======", 123);
-        });
         $('#btnBound').on("click", function() {
-            console.log("=======", 123);
+            const data = vm.getGeojsonData();
+            data && vm.geojsonInput(JSON.stringify(getRawArea(data), null, 2));
         });
     }
     function MainModel() {
@@ -105,7 +103,7 @@
                 featureGroup: self.geojsonLayer
             },
             draw: {
-                rectangle: false,
+                rectangle: true,
                 circle: false,
             }
         });

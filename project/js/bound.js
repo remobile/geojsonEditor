@@ -1,11 +1,10 @@
 (function() {
-    function getRawArea(data, boundName) {
-        const feature = _.find(data.features, o=>o.properties.name == origionName);
+    function getRawArea(data) {
+        const feature = _.find(data.features, o=>o.geometry.coordinates.length == 5);
 
         const result = { type: 'FeatureCollection', features: [] };
         let index = 1;
-        const total = fs.readJsonSync(totalFile);
-        for (const geometry of total.geometries) {
+        for (const geometry of data.geometries) {
             if (geometry.type == 'Polygon') {
                 const intersect = turf.intersect(geometry, feature);
                 if (intersect && intersect.geometry.coordinates[0].length == geometry.coordinates[0].length) {
