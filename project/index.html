@@ -85,6 +85,17 @@
             data && vm.geojsonInput(JSON.stringify(getRawArea(data), null, 2));
         });
     }
+    function modifyName(el, index) {
+        const name = $(el).prev().val();
+        if (name.length > 0) {
+            const data = vm.getGeojsonData();
+            const feature = data.features[index];
+            if (feature) {
+                feature.properties.name = name;
+            }
+            vm.geojsonInput(JSON.stringify(data, null, 2));
+        }
+    }
     function MainModel() {
         var self = this;
         var mapContainer = document.querySelector('#mapContainer');
@@ -119,9 +130,8 @@
             self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
         });
         self.map.on('draw:deleted', function(e){
-            console.log("draw:deleted");
             e.layers.eachLayer(function(layer){
-                self.geojsonLayer.removeLayer(e.layer);
+                self.geojsonLayer.removeLayer(layer);
             })
             self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
         });
@@ -144,19 +154,14 @@
         self.addGeojsonToLayer = function(jsonText){
             if(self.checkGeojsonInput(jsonText)){
                 self.geojsonLayer.clearLayers();
+                let index = 0;
                 var geojson = L.geoJson(JSON.parse(jsonText), {
                     onEachFeature: function(feature, layer){
-                        var i = 0;
-                        for(var key in feature.properties){
-                            i++;
-                        }
-                        if(i>0){
-                            var popup = '';
-                            for(var key in feature.properties){
-                                popup = popup + '<b>'+key+':</b> '+feature.properties[key]+'<br>';
-                            }
-                            layer.bindPopup(popup);
-                        }
+                        var popup = `
+                        <b>name:</b><input style="width:80px;" type="text" name="name" value="${feature.properties.name||''}">
+                        <input type="button" value="修改" onclick="modifyName(this, ${index++})">
+                        `;
+                        layer.bindPopup(popup);
                         self.geojsonLayer.addLayer(layer);
                     }
                 })
