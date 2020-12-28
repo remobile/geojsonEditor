@@ -31,5 +31,5 @@
         }
         return result;
     }
-    window getRawArea = getRawArea;
+    window.getRawArea = getRawArea;
 })();

@@ -14,6 +14,10 @@
     <script src="plugins/codemirror/lib/codemirror.js"></script>
     <script src="plugins/codemirror/mode/javascript/javascript.js"></script>
     <script src="plugins/turf.min.js"></script>
+    <script src="plugins/lodash.min.js"></script>
+    <script src="js/merge.js"></script>
+    <script src="js/split.js"></script>
+    <script src="js/bound.js"></script>
 </head>
 <body>
     <div class="container">
@@ -67,12 +71,14 @@
         };
         reader.readAsText(file);
     };
-    function initButtons() {
+    function initButtons(vm) {
         $('#btnMerge').on("click", function() {
-            console.log("=======", 123);
+            const data = vm.getGeojsonData();
+            data && vm.geojsonInput(JSON.stringify(mergePolygon(data), null, 2));
         });
         $('#btnSplit').on("click", function() {
-            console.log("=======", 123);
+            const data = vm.getGeojsonData();
+            data && vm.geojsonInput(JSON.stringify(splitPolygon(data), null, 2));
         });
         $('#btnList').on("click", function() {
             console.log("=======", 123);
@@ -121,13 +127,19 @@
             })
             self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
         });
+        self.getGeojsonData = function(){
+            try{
+                return JSON.parse(self.geojsonInput());
+            } catch(e){
+                return null;
+            }
+        }
         self.checkGeojsonInput = function(jsonText){
             try{
-                L.geoJson(JSON.parse(jsonText))
-                return true
-            }
-            catch(e){
-                return false
+                L.geoJson(JSON.parse(jsonText));
+                return true;
+            } catch(e){
+                return false;
             }
         }
         // Update map from input
@@ -177,13 +189,13 @@
                     element.editor.setValue(value);
                     element.editor.setCursor(cur);
                     element.editor.refresh();
-                    self.addGeojsonToLayer(self.geojsonInput())
+                    self.addGeojsonToLayer(self.geojsonInput());
                 }
             }
         };
     };
     var vm = new MainModel();
-    initButtons();
+    initButtons(vm);
     ko.applyBindings(vm);
     </script>
 </body>

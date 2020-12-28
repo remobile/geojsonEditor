@@ -31,6 +31,5 @@
         }
         return data;
     }
-
-    window mergePolygon = mergeAll;
+    window.mergePolygon = mergeAll;
 })();

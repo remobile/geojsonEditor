@@ -34,7 +34,7 @@
                 const lsplit = turf.lineSplit(line, pline);
                 const polygonLine1 = psplit.features[1];
                 const polygonLine2 = lineCoordinatesJoin(psplit.features[2], psplit.features[0]);
-                const splitLine = lsplit.features[1];
+                const splitLine = _.find(lsplit.features, o=>turf.booleanContains(polygon, o));
                 const polygon1 = lineJoin(polygonLine1, splitLine);
                 const polygon2 = lineJoin(polygonLine2, splitLine);
                 _polygons.push(polygon1);
@@ -44,5 +44,5 @@
         }
         return turf.featureCollection(polygons);
     }
-    window splitPolygon = split;
+    window.splitPolygon = split;
 })();
