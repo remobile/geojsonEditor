@@ -13,9 +13,8 @@
 
         for (const line of lines) {
             const coords = turf.getCoords(line);
-            const point0 = _.first(coords);
-            const point1 = _.first(coords);
-
+            const point0 = turf.point(_.first(coords));
+            const point1 = turf.point(_.last(coords));
             let index1, index2;
             for (const i in data.features) {
                 const polygon = data.features[i];
