@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="plugins/leaflet.css">
     <link rel="stylesheet" href="plugins/leaflet.draw.css">
     <link rel="stylesheet" href="plugins/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="plugins/codemirror/addon/fold/foldgutter.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="plugins/jquery-2.2.4.min.js"></script>
     <script src="plugins/knockout-3.4.0.js"></script>
@@ -13,6 +14,9 @@
     <script src="plugins/leaflet.draw.js"></script>
     <script src="plugins/codemirror/lib/codemirror.js"></script>
     <script src="plugins/codemirror/mode/javascript/javascript.js"></script>
+    <script src="plugins/codemirror/addon/fold/foldcode.js"></script>
+    <script src="plugins/codemirror/addon/fold/foldgutter.js"></script>
+    <script src="plugins/codemirror/addon/fold/brace-fold.js"></script>
     <script src="plugins/turf.min.js"></script>
     <script src="plugins/lodash.min.js"></script>
     <script src="js/merge.js"></script>
@@ -30,8 +34,9 @@
         <div id="mapContainer">
             <div id="map"></div>
         </div>
+
         <div class="codeContainer">
-            <div style="height:100%;" data-bind='codemirror:{mode: "javascript",lineNumbers: true, value: geojsonInput}'></div>
+            <div style="height:100%;" data-bind='codemirror:{mode: "javascript", lineWrapping: true, foldGutter: true, gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"], lineNumbers: true, value: geojsonInput}'></div>
         </div>
     </div>
     <script>
