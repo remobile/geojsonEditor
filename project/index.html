@@ -108,6 +108,8 @@
         L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(self.map);
         self.geojsonInput = ko.observable(JSON.stringify({"type": "FeatureCollection","features": [{"type": "Feature","properties": {"name": "startPoint"},"geometry": {"type": "Point","coordinates": [106.66557312011717, 26.155592052118045]}}]}, null, 2));
         self.geojsonLayer = new L.FeatureGroup();
+        self.textLayer = new L.FeatureGroup();
+        self.map.addLayer(self.textLayer);
         self.map.addLayer(self.geojsonLayer);
         self.drawControl = new L.Control.Draw({
             edit: {
@@ -154,6 +156,7 @@
         self.addGeojsonToLayer = function(jsonText){
             if(self.checkGeojsonInput(jsonText)){
                 self.geojsonLayer.clearLayers();
+                self.textLayer.clearLayers();
                 let index = 0;
                 var geojson = L.geoJson(JSON.parse(jsonText), {
                     onEachFeature: function(feature, layer){
@@ -163,6 +166,9 @@
                         `;
                         layer.bindPopup(popup);
                         self.geojsonLayer.addLayer(layer);
+
+                        const icon = L.divIcon({ html: feature.properties.name||'', className: 'div-icon', iconSize: 30 });
+                        L.marker(_.reverse(turf.getCoords(turf.center(feature))), { icon }).addTo(self.textLayer);
                     }
                 })
                 try{
