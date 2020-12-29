@@ -34,7 +34,8 @@
                 const lsplit = turf.lineSplit(line, pline);
                 const polygonLine1 = psplit.features[1];
                 const polygonLine2 = lineCoordinatesJoin(psplit.features[2], psplit.features[0]);
-                const splitLine = _.find(lsplit.features, o=>turf.booleanContains(polygon, o));
+                let splitLine = _.find(lsplit.features, o=>turf.booleanContains(polygon, o));
+                splitLine = turf.bezierSpline(splitLine);
                 const polygon1 = lineJoin(polygonLine1, splitLine);
                 const polygon2 = lineJoin(polygonLine2, splitLine);
                 _polygons.push(polygon1);
