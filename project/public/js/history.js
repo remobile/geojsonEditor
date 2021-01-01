@@ -7,7 +7,7 @@
     function post(api, data, callback) {
         $.ajax({
             type: 'POST',
-            url: `/geo/api/{api}`,
+            url: `/geo/api/${api}`,
             dataType: 'json',
             data,
             success: function (result) {
@@ -28,11 +28,13 @@
     function resetHistory(name) {
         historyIndex = 0;
         history = [];
-        post('resetHistory');
-        showHistory();
+        post('resetHistory', {}, (data)=>{
+            pushHistory('打开区域');
+        });
     }
     function pushHistory(name) {
-        post('setHistory', { name, json: vm.geojsonInput() }, (data)=>{
+        post('setHistory', { name, data: vm.geojsonInput() }, (data)=>{
+            console.log("=======", data);
             history.push(data);
             historyIndex++;
             showHistory();
