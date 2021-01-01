@@ -21,16 +21,14 @@
     <script src="plugins/lodash.min.js"></script>
     <script src="js/merge.js"></script>
     <script src="js/split.js"></script>
-    <script src="js/bound.js"></script>
+    <script src="js/history.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="controlContainer">
             <input type="button" value="合并" id="btnMerge" class="button">
             <input type="button" value="分割" id="btnSplit" class="button">
-            <input type="button" value="列表" id="btnList" class="button">
-            <input type="button" value="包围" id="btnBound" class="button">
-            <!--div className="historyContainer">
+            <div className="historyContainer">
                 <div id="historyContent"></div>
                 <div className="bottom-buttons">
                     <div className="layui-btn-group">
@@ -42,7 +40,7 @@
                         </button>
                     </div>
                 </div>
-            </div-->
+            </div>
         </div>
         <div id="mapContainer">
             <div id="map"></div>
@@ -73,34 +71,28 @@
         }
         this.classList.remove('drag-over');
     };
-    var handleDrop = function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        var files = e.dataTransfer.files;
-        if (files && files.length) {
-            readFile(files[0]);
-        }
-        this.classList.remove('drag-over');
-    };
     var readFile = function(file) {
         var reader = new FileReader();
         reader.onload = function(e) {
             vm.geojsonInput(JSON.stringify(JSON.parse(e.target.result), null, 2));
+            resetHistory();
         };
         reader.readAsText(file);
     };
     function initButtons(vm) {
         $('#btnMerge').on("click", function() {
             const data = vm.getGeojsonData();
-            data && vm.geojsonInput(JSON.stringify(mergePolygon(data), null, 2));
+            if (data) {
+                vm.geojsonInput(JSON.stringify(mergePolygon(data), null, 2));
+                pushHistory('合并区域');
+            }
         });
         $('#btnSplit').on("click", function() {
             const data = vm.getGeojsonData();
-            data && vm.geojsonInput(JSON.stringify(splitPolygon(data), null, 2));
-        });
-        $('#btnBound').on("click", function() {
-            const data = vm.getGeojsonData();
-            data && vm.geojsonInput(JSON.stringify(getRawArea(data), null, 2));
+            if (data) {
+                vm.geojsonInput(JSON.stringify(splitPolygon(data), null, 2));
+                pushHistory('分割区域');
+            }
         });
     }
     function modifyName(el, index) {
@@ -112,6 +104,7 @@
                 feature.properties.name = name;
             }
             vm.geojsonInput(JSON.stringify(data, null, 2));
+            pushHistory(`设置名称：${name}`);
         }
     }
     function MainModel() {
@@ -144,16 +137,19 @@
             console.log("draw:created");
             self.geojsonLayer.addLayer(e.layer);
             self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
+            pushHistory('创建区域');
         });
         self.map.on('draw:edited', function(e){
             console.log("draw:edited");
             self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
+            pushHistory('编辑区域');
         });
         self.map.on('draw:deleted', function(e){
             e.layers.eachLayer(function(layer){
                 self.geojsonLayer.removeLayer(layer);
             })
             self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
+            pushHistory('删除区域');
         });
         self.getGeojsonData = function(){
             try{
@@ -222,6 +218,7 @@
         };
     };
     var vm = new MainModel();
+    initButtons(vm);
     initButtons(vm);
     ko.applyBindings(vm);
     </script>

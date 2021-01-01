@@ -4,6 +4,19 @@
     let historyIndex = 0; // 当前历史记录的指针
     let lastAction = {}; // 上一次操作的对象
 
+    function post(api, data, callback) {
+        $.ajax({
+            type: 'POST',
+            url: `/geo/api/{api}`,
+            dataType: 'json',
+            data,
+            success: function (result) {
+                if (result.success) {
+                    callback && callback(result.context);
+                }
+            }
+        });
+    }
     function initHistory(_vm) {
         vm = _vm;
     }
@@ -12,16 +25,25 @@
             `<div class="history-item"${k>historyIndex?' style="color:gray;" ':' '}onclick="window.setTopHistory(${k})">${k+1}. ${o.name}</div>`
         )).join('');
     }
-    function pushHistory(name) {
-        historyIndex++;
-        history.length = historyIndex;
-        history.push({ name, json: vm.geojsonInput() });
+    function resetHistory(name) {
+        historyIndex = 0;
+        history = [];
+        post('resetHistory');
         showHistory();
+    }
+    function pushHistory(name) {
+        post('setHistory', { name, json: vm.geojsonInput() }, (data)=>{
+            history.push(data);
+            historyIndex++;
+            showHistory();
+        });
     }
     function setTopHistory(index) {
         historyIndex = index;
-        vm.setRootHtml(history[historyIndex].json);
-        showHistory();
+        post('getHistoryData', { version: history[historyIndex].version }, (data)=>{
+            vm.geojsonInput(data);
+            showHistory();
+        });
     }
     function popHistory() {
         if (historyIndex > 0) {
@@ -34,6 +56,7 @@
         }
     }
     window.initHistory = initHistory;
+    window.resetHistory = resetHistory;
     window.pushHistory = pushHistory;
     window.popHistory = popHistory;
     window.recoverHistory = recoverHistory;
