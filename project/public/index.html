@@ -26,9 +26,11 @@
 <body>
     <div class="container">
         <div class="controlContainer">
+            <div class="title">geojson编辑器</div>
             <input type="button" value="合并" id="btnMerge" class="button">
             <input type="button" value="分割" id="btnSplit" class="button">
-            <div className="historyContainer">
+            <div class="historyContainer">
+                <div class="title">历史列表</div>
                 <div id="historyContent"></div>
             </div>
         </div>
@@ -127,7 +129,9 @@
             console.log("draw:created");
             self.geojsonLayer.addLayer(e.layer);
             self.geojsonInput(JSON.stringify(self.geojsonLayer.toGeoJSON(), null, 2));
-            pushHistory('创建区域');
+            if (e.layer.layerType === "polyline") {
+                pushHistory('创建区域');
+            }
         });
         self.map.on('draw:edited', function(e){
             console.log("draw:edited");

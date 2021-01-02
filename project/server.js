@@ -23,7 +23,7 @@ app.all("*", function(req, res, next) {
 });
 
 app.post("*", (req, res, next) => {
-    console.log(`请求内容：${JSON.stringify(req.path, 2)}`, req.body.name);
+    console.log(`请求内容：${JSON.stringify(req.path, 2)}`);
     next();
 });
 
@@ -38,11 +38,15 @@ router.post("/resetHistory", (req, res, next) => {
 // setHistory
 router.post("/setHistory", (req, res, next) => {
     const { version, name, data } = req.body;
-    fs.writeFileSync('file', data);
     if (version) {
+        console.log(`git reset --hard ${version}`);
         shell.exec(`git reset --hard ${version}`);
     }
+    console.log('writeFileSync file');
+    fs.writeFileSync('file', data);
+    console.log('git add file');
     shell.exec('git add file');
+    console.log(`git commit -m "${name}"`);
     shell.exec(`git commit -m "${name}"`, { silent:true }, (code, stdout, stderr) => {
         res.json({ success: true, context: { version:  stdout.split(/\n/)[0].replace(/.* ([0-9a-z]*)\].*/, '$1'), name } });
     });
@@ -65,7 +69,7 @@ router.post("/getHistoryList", (req, res, next) => {
 router.post("/getHistoryData", (req, res, next) => {
     const { version } = req.body;
     shell.exec(`git checkout ${version} file`);
-    res.json({ success: true, context: fs.readFileSync('file') });
+    res.json({ success: true, context: fs.readFileSync('file', 'utf-8') });
     shell.exec(`git checkout head file`);
 });
 app.use(`${config.contextPath}/api`,router);

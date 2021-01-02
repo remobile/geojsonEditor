@@ -1,8 +1,7 @@
 (function() {
     let vm;
     let history = []; // 历史记录
-    let historyIndex = 0; // 当前历史记录的指针
-    let lastAction = {}; // 上一次操作的对象
+    let historyIndex = -1; // 当前历史记录的指针
 
     function post(api, data, callback) {
         $.ajax({
@@ -22,30 +21,36 @@
     }
     function showHistory() {
         document.getElementById('historyContent').innerHTML = history.map((o, k)=>(
-            `<div class="history-item"${k>historyIndex?' style="color:gray;" ':' '}onclick="window.setTopHistory(${k})">${k+1}. ${o.name}</div>`
+            `<div class="historyItem"${k>historyIndex?' style="color:gray;" ':' '}onclick="window.setTopHistory(${k})">${k+1}. ${o.name}</div>`
         )).join('');
     }
     function resetHistory(name) {
-        historyIndex = 0;
+        historyIndex = -1;
         history = [];
         post('resetHistory', {}, (data)=>{
             pushHistory('打开区域');
         });
     }
     function pushHistory(name) {
-        post('setHistory', { name, data: vm.geojsonInput() }, (data)=>{
-            console.log("=======", data);
-            history.push(data);
+        let version;
+        if (historyIndex < history.length-1) {
+            version = history[historyIndex].version;
+        }
+        post('setHistory', { version, name, data: vm.geojsonInput() }, (data)=>{
             historyIndex++;
+            history.length = historyIndex;
+            history.push(data);
             showHistory();
         });
     }
     function setTopHistory(index) {
-        historyIndex = index;
-        post('getHistoryData', { version: history[historyIndex].version }, (data)=>{
-            vm.geojsonInput(data);
-            showHistory();
-        });
+        if (historyIndex !== index) {
+            historyIndex = index;
+            post('getHistoryData', { version: history[historyIndex].version }, (data)=>{
+                vm.geojsonInput(data);
+                showHistory();
+            });
+        }
     }
     function popHistory() {
         if (historyIndex > 0) {
