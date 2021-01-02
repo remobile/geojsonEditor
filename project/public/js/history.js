@@ -18,10 +18,16 @@
     }
     function initHistory(_vm) {
         vm = _vm;
+        post('getHistoryList', {}, (data)=>{
+            vm.geojsonInput(data.jsonText);
+            history = data.list;
+            historyIndex = history.length;
+            showHistory();
+        });
     }
     function showHistory() {
         document.getElementById('historyContent').innerHTML = history.map((o, k)=>(
-            `<div class="historyItem"${k>historyIndex?' style="color:gray;" ':' '}onclick="window.setTopHistory(${k})">${k+1}. ${o.name}</div>`
+            `<div class="historyItem"${k>historyIndex?' style="color:gray;" ':' '}onclick="window.setTopHistory(${k})">${k+1}.${o.name.substr(0, 9)}</div>`
         )).join('');
     }
     function resetHistory(name) {

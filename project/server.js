@@ -57,10 +57,11 @@ router.post("/getHistoryList", (req, res, next) => {
         res.json({
             success: true,
             context: {
-                list: stdout.split(/\n/).map(o=>{
+                jsonText: fs.readFileSync('file', 'utf-8'),
+                list: _.reverse(stdout.split(/\n/).map(o=>{
                     const items = o.split('|');
                     return { version: items[0], name: items[1] };
-                })
+                }))
             }
         });
     });
@@ -76,8 +77,8 @@ app.use(`${config.contextPath}/api`,router);
 
 function main() {
     shell.cd(gitdir);
-    const server = app.listen(5000, () => {
-        console.log(`server listenig at http://localhost:${server.address().port}/geo`);
+    const server = app.listen(config.port, () => {
+        console.log(`server listenig at http://localhost:${config.port}/geo`);
         }
     );
 }
