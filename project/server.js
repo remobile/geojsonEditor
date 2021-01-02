@@ -57,6 +57,7 @@ router.post("/getHistoryList", (req, res, next) => {
         res.json({
             success: true,
             context: {
+                config,
                 jsonText: fs.readFileSync('file', 'utf-8'),
                 list: _.reverse(stdout.split(/\n/).map(o=>{
                     const items = o.split('|');

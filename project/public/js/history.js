@@ -1,5 +1,6 @@
 (function() {
     let vm;
+    let config;
     let history = []; // 历史记录
     let historyIndex = -1; // 当前历史记录的指针
 
@@ -20,14 +21,15 @@
         vm = _vm;
         post('getHistoryList', {}, (data)=>{
             vm.geojsonInput(data.jsonText);
+            config = data.config;
             history = data.list;
-            historyIndex = history.length;
+            historyIndex = history.length-1;
             showHistory();
         });
     }
     function showHistory() {
         document.getElementById('historyContent').innerHTML = history.map((o, k)=>(
-            `<div class="historyItem"${k>historyIndex?' style="color:gray;" ':' '}onclick="window.setTopHistory(${k})">${k+1}.${o.name.substr(0, 9)}</div>`
+            `<div class="historyItem"${k>historyIndex?' style="color:#D3D3D3;" ':k===historyIndex?' style="color:#FF4500;" ':' '}onclick="window.setTopHistory(${k})">${k+1}.${o.name.substr(0, 9)}</div>`
         )).join('');
     }
     function resetHistory(name) {
@@ -38,16 +40,24 @@
         });
     }
     function pushHistory(name) {
-        let version;
-        if (historyIndex < history.length-1) {
-            version = history[historyIndex].version;
+        if (config.fullHistory) {
+            post('setHistory', { name, data: vm.geojsonInput() }, (data)=>{
+                history.push(data);
+                historyIndex = history.length-1;
+                showHistory();
+            });
+        } else {
+            let version;
+            if (historyIndex < history.length-1) {
+                version = history[historyIndex].version;
+            }
+            post('setHistory', { version, name, data: vm.geojsonInput() }, (data)=>{
+                historyIndex++;
+                history.length = historyIndex;
+                history.push(data);
+                showHistory();
+            });
         }
-        post('setHistory', { version, name, data: vm.geojsonInput() }, (data)=>{
-            historyIndex++;
-            history.length = historyIndex;
-            history.push(data);
-            showHistory();
-        });
     }
     function setTopHistory(index) {
         if (historyIndex !== index) {
