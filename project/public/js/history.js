@@ -24,12 +24,21 @@
             config = data.config;
             history = data.list;
             historyIndex = history.length-1;
+            updateInfo(data.jsonText);
             showHistory();
         });
     }
+    function updateInfo(jsonText) {
+        try{
+            const data = JSON.parse(jsonText);
+            $('#infoContent').html(`区域数量：${_.filter(data.features, o=>o.geometry.type === 'Polygon').length}`);
+        } catch(e){
+            return null;
+        }
+    }
     function showHistory() {
         document.getElementById('historyContent').innerHTML = history.map((o, k)=>(
-            `<div class="historyItem"${k>historyIndex?' style="color:#D3D3D3;" ':k===historyIndex?' style="color:#FF4500;" ':' '}onclick="window.setTopHistory(${k})">${k+1}.${o.name.substr(0, 9)}</div>`
+            `<div class="historyItem"${k>historyIndex?' style="color:#D3D3D3;" ':k===historyIndex?' style="color:#FF4500;" ':' '}onclick="window.setTopHistory(${k})">${k+1}.${o.name.substr(0, 8)}</div>`
         )).join('');
     }
     function resetHistory(name) {
@@ -40,8 +49,10 @@
         });
     }
     function pushHistory(name) {
+        const jsonText = vm.geojsonInput();
+        updateInfo(jsonText);
         if (config.fullHistory) {
-            post('setHistory', { name, data: vm.geojsonInput() }, (data)=>{
+            post('setHistory', { name, data: jsonText }, (data)=>{
                 history.push(data);
                 historyIndex = history.length-1;
                 showHistory();
@@ -51,7 +62,7 @@
             if (historyIndex < history.length-1) {
                 version = history[historyIndex].version;
             }
-            post('setHistory', { version, name, data: vm.geojsonInput() }, (data)=>{
+            post('setHistory', { version, name, data: jsonText }, (data)=>{
                 historyIndex++;
                 history.length = historyIndex;
                 history.push(data);

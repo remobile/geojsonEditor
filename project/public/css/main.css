@@ -35,9 +35,11 @@ body,html {
     height: 100%;
 }
 .button {
-    margin-top: 10px;
+    margin-top: 7px;
     margin-left: 10px;
     margin-right: 10px;
+    cursor: pointer;
+    margin-bottom: 7px;
 }
 .div-icon{
     font-size:15px;
@@ -48,6 +50,8 @@ body,html {
     display: flex;
     flex-direction: column;
     padding-top: 10px;
+    padding-bottom: 40px;
+    overflow-y: scroll;
 }
 .title {
     color: #FFF;
@@ -57,11 +61,12 @@ body,html {
     padding-bottom: 4px;
 }
 #historyContent {
-    flex: 1;
-    overflow-y: scroll;
     padding-left: 10px;
 }
 .historyItem {
     cursor: pointer;
     margin-top: 10px;
+}
+#infoContent {
+    text-align: center;
 }
