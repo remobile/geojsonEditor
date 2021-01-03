@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <script src="./plugins/jquery-2.2.4.min.js"></script>
+    <title>地图比较</title>
+    <style>
+    .content {
+        position: absolute;
+        top: 20px;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+    }
+    .orgin-col {
+        flex: 1;
+        border: 2px dashed #ccc;
+        color: #999;
+        background-color: #f1f1f1;
+        text-align: center;
+        font-size: 24px;
+        line-height: 100px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="orgin-col" id="chart1">
+            请把地图JSON文件拖拽至此
+        </div>
+        <div class="orgin-col" id="chart2">
+            请把地图JSON文件拖拽至此
+        </div>
+    </div>
+    <script src="./plugins/echarts.min.js"></script>
+    <script type="text/javascript">
+    var chart1, chart2;
+    var ele1 = document.querySelector('#chart1');
+    var ele2 = document.querySelector('#chart2');
+
+    var handleDragEnter = function(e) {
+        this.classList.add('drag-over');
+    };
+
+    var handleDragOver = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    };
+
+    var handleDragLeave = function(e) {
+        this.classList.remove('drag-over');
+    };
+
+    var handleDrop = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var files = e.dataTransfer.files;
+        if (files && files.length) {
+            readFile(files[0], this.id);
+        }
+        this.classList.remove('drag-over');
+    };
+
+    // 读取
+    var readFile = function(file, id) {
+        var filename = file.name;
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            renderChart(id, JSON.parse(e.target.result));
+        };
+
+        reader.readAsText(file);
+    };
+
+    //渲染图表
+    var renderChart = function(id, json) {
+        var target = document.getElementById(id);
+        try {
+            echarts.dispose(target);
+        } catch (e) {
+
+        }
+        var chartInstance = echarts.init(target);
+        if (id === "chart1") {
+            chart1 = chartInstance;
+        } else {
+            chart2 = chartInstance;
+        }
+        echarts.registerMap(id, json);
+        option = {
+            series: [{
+                type: 'map',
+                map: id,
+                roam: true,
+                selectedMode: 'single',
+                label: {
+                    normal: {
+                        show: true
+                    }
+                },
+                layoutCenter: ['50%', '50%'],
+                layoutSize: Math.min(target.clientWidth, target.clientHeight),
+                data: [],
+                markPoint: {
+                    label: {
+                        normal: {
+                            formatter: function(params) {
+                                return params.name;
+                            }
+                        }
+                    },
+                    data: []
+                }
+            }]
+        };
+        chartInstance.setOption(option);
+    };
+
+    ele1.addEventListener('dragenter', handleDragEnter, false);
+    ele1.addEventListener('dragleave', handleDragLeave, false);
+    ele1.addEventListener('dragover', handleDragOver, false);
+    ele1.addEventListener('drop', handleDrop, false);
+
+    ele2.addEventListener('dragenter', handleDragEnter, false);
+    ele2.addEventListener('dragleave', handleDragLeave, false);
+    ele2.addEventListener('dragover', handleDragOver, false);
+    ele2.addEventListener('drop', handleDrop, false);
+
+    $(window).resize(function() {
+        if (chart1) {
+            chart1.setOption({
+                series: [{
+                    layoutSize: Math.min(ele1.clientWidth, ele1.clientHeight)
+                }]
+            });
+            chart1.resize();
+        }
+        if (chart2) {
+            chart2.setOption({
+                series: [{
+                    layoutSize: Math.min(ele2.clientWidth, ele2.clientHeight)
+                }]
+            });
+            chart2.resize();
+
+        }
+    });
+    $(document).ready(function(){
+        var mapjson = localStorage.getItem('mapjson');
+        console.log("=======", mapjson);
+        if (mapjson) {
+            renderChart('chart1', JSON.parse(mapjson));
+        }
+    });
+    window.onunload = function() {
+        localStorage.removeItem('mapjson');
+    };
+    window.onbeforeunload = function() {
+        localStorage.removeItem('mapjson');
+    };
+    </script>
+</body>
+</html>

@@ -31,6 +31,7 @@
             <div class="title">功能按钮</div>
             <input type="button" value="合并" id="btnMerge" class="button">
             <input type="button" value="分割" id="btnSplit" class="button">
+            <input type="button" value="查看" id="btnShow" class="button">
             <div class="title">历史列表</div>
             <div class="historyContainer">
                 <div id="historyContent"></div>
@@ -87,6 +88,10 @@
                 vm.geojsonInput(JSON.stringify(splitPolygon(data), null, 2));
                 pushHistory('分割区域');
             }
+        });
+        $('#btnShow').on("click", function() {
+            localStorage.setItem('mapjson', vm.geojsonInput());
+            window.open('./show.html', '_blank');
         });
     }
     function modifyName(el, index) {
