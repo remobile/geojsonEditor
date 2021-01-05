@@ -27,11 +27,17 @@ app.post("*", (req, res, next) => {
     next();
 });
 
-const gitdir = path.join(process.cwd(), '.gitdir');
+const rootdir = path.join(process.cwd(), '.gitdir');
+const gitdir = path.join(rootdir, 'current');
 const router = express.Router();
 // resetHistory
 router.post("/resetHistory", (req, res, next) => {
-    fs.emptyDirSync(gitdir);
+    const now = new Date();
+    if (fs.existsSync('file')) {
+        fs.moveSync(gitdir, path.join(rootdir, `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`));
+        fs.ensureDirSync(gitdir);
+        shell.cd(gitdir);
+    }
     shell.exec('git init .');
     res.json({ success: true });
 });
@@ -58,7 +64,7 @@ router.post("/getHistoryList", (req, res, next) => {
             success: true,
             context: {
                 config,
-                jsonText: fs.readFileSync('file', 'utf-8'),
+                jsonText: fs.existsSync('file') && fs.readFileSync('file', 'utf-8'),
                 list: _.reverse(stdout.split(/\n/).map(o=>{
                     const items = o.split('|');
                     return { version: items[0], name: items[1] };
@@ -77,6 +83,7 @@ router.post("/getHistoryData", (req, res, next) => {
 app.use(`${config.contextPath}/api`,router);
 
 function main() {
+    fs.ensureDirSync(gitdir);
     shell.cd(gitdir);
     const server = app.listen(config.port, () => {
         console.log(`server listenig at http://localhost:${config.port}/geo`);

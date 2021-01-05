@@ -20,12 +20,14 @@
     function initHistory(_vm) {
         vm = _vm;
         post('getHistoryList', {}, (data)=>{
-            vm.geojsonInput(data.jsonText);
             config = data.config;
-            history = data.list;
-            historyIndex = history.length-1;
-            updateInfo(data.jsonText);
-            showHistory();
+            if (data.jsonText) {
+                vm.geojsonInput(data.jsonText);
+                history = data.list;
+                historyIndex = history.length-1;
+                updateInfo(data.jsonText);
+                showHistory();
+            }
         });
     }
     function updateInfo(jsonText) {
